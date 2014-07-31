@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">PitchCounter</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="title_activity_games_played">GamesPlayedActivity</string>
+    <string name="title_activity_edit_games">Edit Game</string>
+
+</resources>
