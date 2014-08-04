@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
+import android.view.ViewGroup.LayoutParams;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -37,6 +38,8 @@ public class GamesPlayedActivity extends Activity {
 
     private Pitcher thePitcher;
     private final int DATE_DIALOG_ID = 1001;
+
+    //TODO: Add method that returns default TextView
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -129,39 +132,45 @@ public class GamesPlayedActivity extends Activity {
     private LinearLayout getGameLL(final Game theGame, final int num)
     {
         final LinearLayout theLayout = new LinearLayout(theC);
-        theLayout.setOrientation(LinearLayout.VERTICAL);
+        theLayout.setOrientation(LinearLayout.HORIZONTAL);
+        theLayout.setWeightSum(1);
 
         if(theGame == null || theGame.getDate() == null)
             return new LinearLayout(theC);
 
-        final TextView theView = new TextView(theC);
+        final TextView theView = getDefaultTV(theGame);
+        theView.setText(getCalendarString(theGame.getDateCalendar()));
+        theView.setGravity(Gravity.LEFT);
 
         if(num != 0)
-            theView.setPadding(0, 30, 0, 0);
-        theView.setTextSize(20);
-        theView.setText(getCalendarString(theGame.getDateCalendar()));
-        theView.setOnClickListener(new EditGameListener(theGame));
-        theView.setLongClickable(true);
-        theView.setClickable(true);
-        theView.setOnLongClickListener(new DeleteGameListener(theGame));
-        theView.setGravity(Gravity.LEFT);
+            theView.setPadding(0, 40, 0, 0);
 
         if(num % 2 == 0)
             theView.setTextColor(Color.parseColor("#ff33b5e5"));
         else
             theView.setTextColor(Color.BLACK);
 
-        final TextView pitches = new TextView(theC);
+        final TextView pitches = getDefaultTV(theGame);
         pitches.setText(getPitchesText(theGame.getTotalPitches()));
-        pitches.setTextSize(20);
-        pitches.setPadding(0, 5, 0, 0);
         pitches.setGravity(Gravity.RIGHT);
-        pitches.setTextColor(android.graphics.Color.LTGRAY);
-
+        pitches.setTextColor(Color.LTGRAY);
         theLayout.addView(theView);
         theLayout.addView(pitches);
-
         return theLayout;
+    }
+
+    private TextView getDefaultTV(final Game theGame) {
+        final TextView theView = new TextView(theC);
+        theView.setLongClickable(true);
+        theView.setClickable(true);
+        theView.setTextSize(20);
+        theView.setOnClickListener(new EditGameListener(theGame));
+        theView.setOnLongClickListener(new DeleteGameListener(theGame));
+
+        final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT, 1.0f);
+        theView.setLayoutParams(params);
+        return theView;
     }
 
     @Override

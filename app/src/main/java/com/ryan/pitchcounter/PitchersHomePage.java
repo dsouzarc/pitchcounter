@@ -42,9 +42,7 @@ public class PitchersHomePage extends Activity {
         thePitcherDatabase.close();
 
         updateActionBar();
-
         addPitchersToLL();
-
     }
 
     private void updateActionBar()
