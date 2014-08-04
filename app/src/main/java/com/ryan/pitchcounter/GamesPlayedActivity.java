@@ -60,8 +60,80 @@ public class GamesPlayedActivity extends Activity {
 
     }
 
+    private class EditGameListener implements View.OnClickListener {
+        private final Game theGame;
+
+        public EditGameListener(final Game theGame) {
+            this.theGame = theGame;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Intent toEditGame = new Intent(GamesPlayedActivity.this, EditGamesActivity.class);
+            toEditGame.putExtra("GameDate", fromCalendar(theGame.getDateCalendar()));
+            toEditGame.putExtra("PitcherName", theGame.getThePitcher().getName());
+            toEditGame.putExtra("PitcherPitches", theGame.getThePitcher().getNumPitches());
+            toEditGame.putExtra("NumStrikes", theGame.getNumStrike());
+            toEditGame.putExtra("NumBalls", theGame.getNumBall());
+            startActivity(toEditGame);
+        }
+    }
+
+    private class DeleteGameListener implements View.OnLongClickListener {
+        private final Game theGame;
+
+        public DeleteGameListener(final Game theGame) {
+            this.theGame = theGame;
+        }
+
+        @Override
+        public boolean onLongClick(View theView) {
+            final AlertDialog.Builder deleteGame = new AlertDialog.Builder(theC);
+            deleteGame.setTitle("Delete Game");
+            deleteGame.setMessage("Are you sure you want to delete the game on " + theGame.getDate());
+
+            deleteGame.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    List<Game> theGamesAL = new ArrayList<Game>(Arrays.asList(theGames));
+                    for(int i = 0; i < theGamesAL.size(); i++)
+                    {
+                        if(theGamesAL.get(i).getDate().equals(theGame.getDate())) {
+                            theGamesAL.remove(i);
+                            i = theGamesAL.size() * 2;
+                        }
+                    }
+
+                    theGames = theGamesAL.toArray(theGames);
+
+                    theGamesLayout.removeAllViews();
+
+                    for(int i = 0; i < theGames.length; i++)
+                        theGamesLayout.addView(getGameLL(theGames[i], i));
+
+                    updateActionBarTitle();
+
+                    theGamesDB = new SQLiteGamesDatabase(theC);
+                    theGamesDB.deleteGame(theGame);
+                    theGamesDB.close();
+                }
+            });
+
+            deleteGame.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                }
+            });
+            deleteGame.show();
+            return true;
+        }
+    }
+
     private TextView getGameLL(final Game theGame, final int num)
     {
+        LinearLayout theLayout = new LinearLayout(theC);
+        theLayout.setOrientation(LinearLayout.VERTICAL);
+
         if(theGame == null || theGame.getDate() == null)
             return new TextView(theC);
 
@@ -69,64 +141,10 @@ public class GamesPlayedActivity extends Activity {
         theView.setPadding(0, 0, 0, 20);
         theView.setTextSize(20);
         theView.setText(theGame.getDate() + " # pitches: " + theGame.getTotalPitches());
-        theView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent toEditGame = new Intent(GamesPlayedActivity.this, EditGamesActivity.class);
-                toEditGame.putExtra("GameDate", fromCalendar(theGame.getDateCalendar()));
-                toEditGame.putExtra("PitcherName", theGame.getThePitcher().getName());
-                toEditGame.putExtra("PitcherPitches", theGame.getThePitcher().getNumPitches());
-                toEditGame.putExtra("NumStrikes", theGame.getNumStrike());
-                toEditGame.putExtra("NumBalls", theGame.getNumBall());
-                startActivity(toEditGame);
-            }
-        });
+        theView.setOnClickListener(new EditGameListener(theGame));
         theView.setLongClickable(true);
         theView.setClickable(true);
-        theView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                final AlertDialog.Builder deleteGame = new AlertDialog.Builder(theC);
-                deleteGame.setTitle("Delete Game");
-                deleteGame.setMessage("Are you sure you want to delete the game on " + theGame.getDate());
-
-                deleteGame.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        List<Game> theGamesAL = new ArrayList<Game>(Arrays.asList(theGames));
-                        for(int i = 0; i < theGamesAL.size(); i++)
-                        {
-                            if(theGamesAL.get(i).getDate().equals(theGame.getDate())) {
-                                theGamesAL.remove(i);
-                                i = theGamesAL.size() * 2;
-                            }
-                        }
-
-                        theGames = theGamesAL.toArray(theGames);
-
-                        theGamesLayout.removeAllViews();
-
-                        for(int i = 0; i < theGames.length; i++)
-                            theGamesLayout.addView(getGameLL(theGames[i], i));
-
-                        updateActionBarTitle();
-
-                        theGamesDB = new SQLiteGamesDatabase(theC);
-                        theGamesDB.deleteGame(theGame);
-                        theGamesDB.close();
-                    }
-                });
-
-                deleteGame.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
-
-                deleteGame.show();
-                return true;
-            }
-        });
+        theView.setOnLongClickListener(new DeleteGameListener(theGame));
 
         if(num % 2 == 0)
             theView.setTextColor(Color.parseColor("#ff33b5e5"));
@@ -170,35 +188,32 @@ public class GamesPlayedActivity extends Activity {
     }
 
     /** Callback received when the user "picks" a date in the dialog */
-    private DatePickerDialog.OnDateSetListener pDateSetListener =
-            new DatePickerDialog.OnDateSetListener()
-            {
+    private DatePickerDialog.OnDateSetListener pDateSetListener = new DatePickerDialog.OnDateSetListener()
+    {
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)
+        {
+            Calendar chosenDate = new GregorianCalendar(year, monthOfYear, dayOfMonth);
+            Calendar today = new GregorianCalendar();
 
-                public void onDateSet(DatePicker view, int year,
-                                      int monthOfYear, int dayOfMonth)
-                {
-                    Calendar chosenDate = new GregorianCalendar(year, monthOfYear, dayOfMonth);
-                    Calendar today = new GregorianCalendar();
+            long numDays = daysBetween(chosenDate, today);
 
-                    long numDays = daysBetween(chosenDate, today);
+            if(numDays == 0)
+                setTitle("Today, " + getCalendarString(today));
+            else if(numDays > 0)
+                setTitle(numDays + " days ago, " + getCalendarString(chosenDate));
+            else if(numDays < 0)
+                setTitle(numDays + " from now, " + getCalendarString(chosenDate));
 
-                    if(numDays == 0)
-                        setTitle("Today, " + getCalendarString(today));
-                    else if(numDays > 0)
-                        setTitle(numDays + " days ago, " + getCalendarString(chosenDate));
-                    else if(numDays < 0)
-                        setTitle(numDays + " from now, " + getCalendarString(chosenDate));
+            final Game newGame = new Game(chosenDate, thePitcher);
 
-                    final Game newGame = new Game(chosenDate, thePitcher);
+            theGamesLayout.addView(getGameLL(newGame, theGames.length), 0);
+            theGamesDB = new SQLiteGamesDatabase(theC);
+            theGamesDB.addGame(newGame);
+            theGamesDB.close();
 
-                    theGamesLayout.addView(getGameLL(newGame, 0), 0);
-                    theGamesDB = new SQLiteGamesDatabase(theC);
-                    theGamesDB.addGame(newGame);
-                    theGamesDB.close();
-
-                    updateActionBarTitle();
-                }
-            };
+            updateActionBarTitle();
+        }
+    };
 
 
     private void updateActionBarTitle()
