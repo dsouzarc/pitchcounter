@@ -40,7 +40,6 @@ public class Game {
 
     public String calendarToDate(Calendar theCal)
     {
-
         return days[theCal.get(Calendar.DAY_OF_WEEK)-1] +  ", " +
                 months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
                 ", " + theCal.get(Calendar.YEAR);

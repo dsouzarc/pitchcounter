@@ -54,10 +54,8 @@ public class GamesPlayedActivity extends Activity {
         
         updateActionBarTitle();
 
-
         for(int i = 0; i < theGames.length; i++)
             theGamesLayout.addView(getGameLL(theGames[i], i));
-
     }
 
     private class EditGameListener implements View.OnClickListener {
@@ -96,8 +94,7 @@ public class GamesPlayedActivity extends Activity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     List<Game> theGamesAL = new ArrayList<Game>(Arrays.asList(theGames));
-                    for(int i = 0; i < theGamesAL.size(); i++)
-                    {
+                    for(int i = 0; i < theGamesAL.size(); i++) {
                         if(theGamesAL.get(i).getDate().equals(theGame.getDate())) {
                             theGamesAL.remove(i);
                             i = theGamesAL.size() * 2;
@@ -129,28 +126,39 @@ public class GamesPlayedActivity extends Activity {
         }
     }
 
-    private TextView getGameLL(final Game theGame, final int num)
+    private LinearLayout getGameLL(final Game theGame, final int num)
     {
-        LinearLayout theLayout = new LinearLayout(theC);
+        final LinearLayout theLayout = new LinearLayout(theC);
         theLayout.setOrientation(LinearLayout.VERTICAL);
 
         if(theGame == null || theGame.getDate() == null)
-            return new TextView(theC);
+            return new LinearLayout(theC);
 
-        TextView theView = new TextView(theC);
-        theView.setPadding(0, 0, 0, 20);
+        final TextView theView = new TextView(theC);
+        theView.setPadding(0, 30, 0, 0);
         theView.setTextSize(20);
-        theView.setText(theGame.getDate() + " # pitches: " + theGame.getTotalPitches());
+        theView.setText(getCalendarString(theGame.getDateCalendar()));
         theView.setOnClickListener(new EditGameListener(theGame));
         theView.setLongClickable(true);
         theView.setClickable(true);
         theView.setOnLongClickListener(new DeleteGameListener(theGame));
+        theView.setGravity(Gravity.LEFT);
 
         if(num % 2 == 0)
             theView.setTextColor(Color.parseColor("#ff33b5e5"));
         else
             theView.setTextColor(Color.BLACK);
-        return theView;
+
+        TextView pitches = new TextView(theC);
+        pitches.setText(getPitchesText(theGame.getTotalPitches()));
+        pitches.setTextSize(20);
+        pitches.setGravity(Gravity.RIGHT);
+        pitches.setTextColor(android.graphics.Color.LTGRAY);
+
+        theLayout.addView(theView);
+        theLayout.addView(pitches);
+
+        return theLayout;
     }
 
     @Override
@@ -215,6 +223,12 @@ public class GamesPlayedActivity extends Activity {
         }
     };
 
+    private String getPitchesText(final int thePitches) {
+        if(thePitches == 1)
+            return thePitches + " pitch";
+        return thePitches + " pitches";
+    }
+
 
     private void updateActionBarTitle()
     {
@@ -262,7 +276,7 @@ public class GamesPlayedActivity extends Activity {
     /**Returns something like Thursday, July 10th, 2014 */
     public static String getCalendarString(Calendar theCal)
     {
-        return days[theCal.get(Calendar.DAY_OF_WEEK)] +  ", " +
+        return days[theCal.get(Calendar.DAY_OF_WEEK)].substring(0, 3) +  ", " +
                 months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
                 ", " + theCal.get(Calendar.YEAR);
     }
@@ -280,8 +294,7 @@ public class GamesPlayedActivity extends Activity {
             "June", "July", "August", "September", "October", "November", "December"};
 
     //Returns calender from theStr = "07/11/2014"
-    private Calendar fromString(String theStr)
-    {
+    private Calendar fromString(String theStr) {
         String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
         int month = Integer.parseInt(getMonth);
 
@@ -297,8 +310,7 @@ public class GamesPlayedActivity extends Activity {
     }
 
     //Returns 07/11/2014
-    private String fromCalendar(Calendar theCal)
-    {
+    private String fromCalendar(Calendar theCal) {
         return theCal.get(Calendar.MONTH) + "/" + theCal.get(Calendar.DAY_OF_MONTH) + "/" +
                 theCal.get(Calendar.YEAR);
     }
