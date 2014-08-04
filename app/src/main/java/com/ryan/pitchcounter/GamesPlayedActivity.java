@@ -135,7 +135,9 @@ public class GamesPlayedActivity extends Activity {
             return new LinearLayout(theC);
 
         final TextView theView = new TextView(theC);
-        theView.setPadding(0, 30, 0, 0);
+
+        if(num != 0)
+            theView.setPadding(0, 30, 0, 0);
         theView.setTextSize(20);
         theView.setText(getCalendarString(theGame.getDateCalendar()));
         theView.setOnClickListener(new EditGameListener(theGame));
@@ -149,9 +151,10 @@ public class GamesPlayedActivity extends Activity {
         else
             theView.setTextColor(Color.BLACK);
 
-        TextView pitches = new TextView(theC);
+        final TextView pitches = new TextView(theC);
         pitches.setText(getPitchesText(theGame.getTotalPitches()));
         pitches.setTextSize(20);
+        pitches.setPadding(0, 5, 0, 0);
         pitches.setGravity(Gravity.RIGHT);
         pitches.setTextColor(android.graphics.Color.LTGRAY);
 
