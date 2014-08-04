@@ -27,7 +27,7 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
-
+import android.graphics.Color;
 public class GamesPlayedActivity extends Activity {
 
     private LinearLayout theGamesLayout;
@@ -56,11 +56,11 @@ public class GamesPlayedActivity extends Activity {
 
 
         for(int i = 0; i < theGames.length; i++)
-            theGamesLayout.addView(getGameLL(theGames[i]));
+            theGamesLayout.addView(getGameLL(theGames[i], i));
 
     }
 
-    private TextView getGameLL(final Game theGame)
+    private TextView getGameLL(final Game theGame, final int num)
     {
         if(theGame == null || theGame.getDate() == null)
             return new TextView(theC);
@@ -107,7 +107,7 @@ public class GamesPlayedActivity extends Activity {
                         theGamesLayout.removeAllViews();
 
                         for(int i = 0; i < theGames.length; i++)
-                            theGamesLayout.addView(getGameLL(theGames[i]));
+                            theGamesLayout.addView(getGameLL(theGames[i], i));
 
                         updateActionBarTitle();
 
@@ -127,6 +127,11 @@ public class GamesPlayedActivity extends Activity {
                 return true;
             }
         });
+
+        if(num % 2 == 0)
+            theView.setTextColor(Color.parseColor("#ff33b5e5"));
+        else
+            theView.setTextColor(Color.BLACK);
         return theView;
     }
 
@@ -186,7 +191,7 @@ public class GamesPlayedActivity extends Activity {
 
                     final Game newGame = new Game(chosenDate, thePitcher);
 
-                    theGamesLayout.addView(getGameLL(newGame), 0);
+                    theGamesLayout.addView(getGameLL(newGame, 0), 0);
                     theGamesDB = new SQLiteGamesDatabase(theC);
                     theGamesDB.addGame(newGame);
                     theGamesDB.close();
