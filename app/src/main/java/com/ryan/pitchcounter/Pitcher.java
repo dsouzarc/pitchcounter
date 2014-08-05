@@ -2,8 +2,7 @@ package com.ryan.pitchcounter;
 
 import java.util.ArrayList;
 
-public class Pitcher
-{
+public class Pitcher {
     private String name;
     private int numPitches;
     private ArrayList<Game> games;
@@ -31,8 +30,14 @@ public class Pitcher
         return total;
     }
 
-    public void addPitch() { this.numPitches++;}
-    public void subtractPitch() { this.numPitches--; }
+    public void addPitch() {
+        this.numPitches++;
+    }
+
+    public void subtractPitch() {
+        this.numPitches--;
+    }
+
     public String getName() {
         return name;
     }
@@ -58,7 +63,7 @@ public class Pitcher
     }
 
     @Override
-    public boolean equals(Object otherPitcher) {
+    public boolean equals(final Object otherPitcher) {
         if(otherPitcher instanceof Pitcher)
             return this.name.equals(((Pitcher) otherPitcher).getName());
         return false;
