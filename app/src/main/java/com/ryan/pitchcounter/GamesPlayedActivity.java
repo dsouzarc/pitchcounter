@@ -230,16 +230,11 @@ public class GamesPlayedActivity extends Activity {
     }
 
     private void updateActionBarTitle() {
-        for(int i = 0; i < theGames.size(); i++) {
-            log(theGames.get(i).toString());
-        }
-
         String theStr = "";
         if(theGames.size() == 1)
             theStr = "1 Game";
         else
             theStr = theGames.size() + " Games";
-
         getActionBar().setTitle(theStr + " for " + thePitcher.getName());
     }
 

@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
@@ -29,9 +30,9 @@ public class PitchersHomePage extends Activity {
     private static final DecimalFormat theFormat = new DecimalFormat("0.000");
 
     private final Context theC = this;
+    private final List<Pitcher> thePitchers = new ArrayList<Pitcher>();
 
     private LinearLayout thePitcherLayout;
-    private Pitcher[] thePitchers;
     private SQLitePitcherDatabase thePitcherDatabase;
 
     @Override
@@ -42,7 +43,7 @@ public class PitchersHomePage extends Activity {
         thePitcherLayout = (LinearLayout) findViewById(R.id.pitchersLinearLayout);
 
         thePitcherDatabase = new SQLitePitcherDatabase(theC);
-        thePitchers = removeDuplicates(thePitcherDatabase.getAllPitchersStrike(theC));
+        thePitchers.addAll(removeDuplicates(thePitcherDatabase.getAllPitchersStrike(theC)));
         thePitcherDatabase.close();
 
         updateActionBar();
@@ -50,15 +51,16 @@ public class PitchersHomePage extends Activity {
     }
 
     private void updateActionBar() {
-        if(thePitchers.length == 1)
+        if(thePitchers.size() == 1)
             getActionBar().setTitle("1 Pitcher");
         else
-            getActionBar().setTitle(thePitchers.length + " Pitchers");
+            getActionBar().setTitle(thePitchers.size() + " Pitchers");
     }
 
     private void addPitchersToLL()  {
-        for(int i = 0; i < thePitchers.length; i++)
-            thePitcherLayout.addView(getLL(thePitchers[i], i));
+        thePitcherLayout.removeAllViews();
+        for(int i = 0; i < thePitchers.size(); i++)
+            thePitcherLayout.addView(getLL(thePitchers.get(i), i));
     }
 
     private LinearLayout getLL(final Pitcher thePitcher, final int num) {
@@ -121,19 +123,14 @@ public class PitchersHomePage extends Activity {
                 deletePitcher.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Pitcher tempPitchers[] = new Pitcher[thePitchers.length-1];
                         int counter = 0;
-                        for(int i = 0; i < thePitchers.length; i++) {
-                            if(!thePitcher.getName().equals(thePitchers[i].getName())) {
-                                tempPitchers[counter] = thePitchers[i];
-                                counter++;
+                        for(int i = 0; i < thePitchers.size(); i++) {
+                            if(thePitcher.getName().equals(thePitchers.get(i).getName())) {
+                                thePitchers.remove(i);
+                                counter--;
                             }
                         }
-                        thePitchers = tempPitchers;
 
-                        updateActionBar();
-
-                        thePitcherLayout.removeAllViews();
                         addPitchersToLL();
                         updateActionBar();
 
@@ -141,7 +138,7 @@ public class PitchersHomePage extends Activity {
                         thePitcherDatabase.deletePitcher(thePitcher);
                         thePitcherDatabase.close();
 
-                        SQLiteGamesDatabase theGDB = new SQLiteGamesDatabase(theC);
+                        final SQLiteGamesDatabase theGDB = new SQLiteGamesDatabase(theC);
                         theGDB.deleteGames(thePitcher);
                         theGDB.close();
                     }
@@ -161,17 +158,15 @@ public class PitchersHomePage extends Activity {
     }
 
 
-    public Pitcher[] removeDuplicates(final List<Pitcher> thePitchers) {
-        final SortedSet<Pitcher> theSorted = new TreeSet<Pitcher>(new Comparator<Pitcher>()
-        {
+    public List<Pitcher> removeDuplicates(final List<Pitcher> thePitchers) {
+        final SortedSet<Pitcher> theSorted = new TreeSet<Pitcher>(new Comparator<Pitcher>() {
             @Override
-            public int compare(Pitcher arg0, Pitcher arg1)
-            {
+            public int compare(Pitcher arg0, Pitcher arg1) {
                 return arg0.getName().compareTo(arg1.getName());
             }
         });
         theSorted.addAll(thePitchers);
-        return theSorted.toArray(new Pitcher[theSorted.size()]);
+        return new ArrayList<Pitcher>(theSorted);
     }
 
     @Override
@@ -204,7 +199,9 @@ public class PitchersHomePage extends Activity {
                 public void onClick(DialogInterface dialog, int which) {
                     final Pitcher thePitcher = new Pitcher(forPN.getText().toString());
 
-                    thePitcherLayout.addView(getLL(thePitcher, thePitchers.length + 1), thePitchers.length);
+                    thePitchers.add(0, thePitcher);
+                    addPitchersToLL();
+                    updateActionBar();
 
                     thePitcherDatabase = new SQLitePitcherDatabase(theC);
                     thePitcherDatabase.addPitcher(thePitcher);
