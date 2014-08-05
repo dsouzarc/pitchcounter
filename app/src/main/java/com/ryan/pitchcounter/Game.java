@@ -10,36 +10,56 @@ public class Game {
     private Pitcher thePitcher;
     private int numStrike, numBall;
     private Calendar theDate;
+    private short ID;
 
-    public Game(Calendar date, Pitcher thePitcher)
+    public Game(Calendar date, Pitcher thePitcher, final short ID)
     {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numBall = 0;
         this.numStrike = 0;
         this.date = calendarToDate(theDate);
+        this.ID = ID;
     }
 
-    public Game(Calendar date, String pitcherName, int numStrike, int numBall)
+    public Game(Calendar date, String pitcherName, int numStrike, int numBall, final short ID)
     {
         this.theDate = date;
         this.thePitcher = new Pitcher(pitcherName, numBall + numStrike);
         this.numStrike = numStrike;
         this.numBall = numBall;
         this.date = calendarToDate(theDate);
+        this.ID = ID;
     }
 
-    public Game(Calendar date, Pitcher thePitcher, int numStrike, int numBall)
+    public Game(Calendar date, Pitcher thePitcher, int numStrike, int numBall, final short ID)
     {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numStrike = numStrike;
         this.numBall = numBall;
         this.date = calendarToDate(theDate);
+        this.ID = ID;
     }
 
-    public String calendarToDate(Calendar theCal)
-    {
+    public Game(Pitcher thePitcher, short ID, Calendar date, int numStrike, int numBall) {
+        this.theDate = date;
+        this.thePitcher = thePitcher;
+        this.numStrike = numStrike;
+        this.numBall = numBall;
+        this.date = calendarToDate(theDate);
+        this.ID = ID;
+    }
+
+    public short getID() {
+        return this.ID;
+    }
+
+    public void setID(final short ID) {
+        this.ID = ID;
+    }
+
+    public String calendarToDate(Calendar theCal) {
         return days[theCal.get(Calendar.DAY_OF_WEEK)-1] +  ", " +
                 months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
                 ", " + theCal.get(Calendar.YEAR);

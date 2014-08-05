@@ -5,9 +5,10 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.content.Context;
-import android.view.ViewGroup.LayoutParams;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Gravity;
@@ -15,29 +16,32 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import android.graphics.Color;
+
 public class GamesPlayedActivity extends Activity {
 
     private LinearLayout theGamesLayout;
     private final Context theC = this;
-    private Game[] theGames;
+    private List<Game> theGames;
     private SQLiteGamesDatabase theGamesDB;
+    private static final String prefName = "com.ryan.pitchcounter";
+    private static final String ID_KEY = "ID";
 
     private Pitcher thePitcher;
     private final int DATE_DIALOG_ID = 1001;
+
+    private static final String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday",
+            "Thursday", "Friday", "Saturday"};
+    private static final String[] months = {"January", "February", "March", "April", "May",
+            "June", "July", "August", "September", "October", "November", "December"};
 
     //TODO: Add method that returns default TextView
 
@@ -45,20 +49,21 @@ public class GamesPlayedActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_games_played);
+        incrementCounter();
 
         thePitcher = new Pitcher(getIntent().getExtras().getString("PitcherName"),
                                  getIntent().getExtras().getInt("Pitches"));
         
         theGamesDB = new SQLiteGamesDatabase(theC);
-        theGames = removeDuplicates(theGamesDB.getGamesForPitcher(thePitcher));
+        theGames = theGamesDB.getGamesForPitcher(thePitcher);
         theGamesDB.close();
         
         theGamesLayout = (LinearLayout) findViewById(R.id.gamesLinearLayout);
         
         updateActionBarTitle();
 
-        for(int i = 0; i < theGames.length; i++)
-            theGamesLayout.addView(getGameLL(theGames[i], i));
+        for(int i = 0; i < theGames.size(); i++)
+            theGamesLayout.addView(getGameLL(theGames.get(i), i));
     }
 
     private class EditGameListener implements View.OnClickListener {
@@ -70,8 +75,9 @@ public class GamesPlayedActivity extends Activity {
 
         @Override
         public void onClick(View v) {
-            Intent toEditGame = new Intent(GamesPlayedActivity.this, EditGamesActivity.class);
+            final Intent toEditGame = new Intent(GamesPlayedActivity.this, EditGamesActivity.class);
             toEditGame.putExtra("GameDate", fromCalendar(theGame.getDateCalendar()));
+            toEditGame.putExtra("GameID", theGame.getID());
             toEditGame.putExtra("PitcherName", theGame.getThePitcher().getName());
             toEditGame.putExtra("PitcherPitches", theGame.getThePitcher().getNumPitches());
             toEditGame.putExtra("NumStrikes", theGame.getNumStrike());
@@ -96,23 +102,13 @@ public class GamesPlayedActivity extends Activity {
             deleteGame.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    List<Game> theGamesAL = new ArrayList<Game>(Arrays.asList(theGames));
-                    for(int i = 0; i < theGamesAL.size(); i++) {
-                        if(theGamesAL.get(i).getDate().equals(theGame.getDate())) {
-                            theGamesAL.remove(i);
-                            i = theGamesAL.size() * 2;
+                    for(int i = 0; i < theGames.size(); i++) {
+                        if(theGames.get(i).getID() == theGame.getID()) {
+                            theGames.remove(i);
+                            i = theGames.size() * 2;
                         }
                     }
-
-                    theGames = theGamesAL.toArray(theGames);
-
-                    theGamesLayout.removeAllViews();
-
-                    for(int i = 0; i < theGames.length; i++)
-                        theGamesLayout.addView(getGameLL(theGames[i], i));
-
-                    updateActionBarTitle();
-
+                    redrawGames();
                     theGamesDB = new SQLiteGamesDatabase(theC);
                     theGamesDB.deleteGame(theGame);
                     theGamesDB.close();
@@ -129,8 +125,7 @@ public class GamesPlayedActivity extends Activity {
         }
     }
 
-    private LinearLayout getGameLL(final Game theGame, final int num)
-    {
+    private LinearLayout getGameLL(final Game theGame, final int num)   {
         final LinearLayout theLayout = new LinearLayout(theC);
         theLayout.setOrientation(LinearLayout.HORIZONTAL);
         theLayout.setWeightSum(1);
@@ -139,7 +134,7 @@ public class GamesPlayedActivity extends Activity {
             return new LinearLayout(theC);
 
         final TextView theView = getDefaultTV(theGame);
-        theView.setText(getCalendarString(theGame.getDateCalendar()));
+        theView.setText(theGame.getDate());
         theView.setGravity(Gravity.LEFT);
 
         if(num != 0)
@@ -178,25 +173,10 @@ public class GamesPlayedActivity extends Activity {
         startActivity(new Intent(this, PitchersHomePage.class));
     }
 
-    public Game[] removeDuplicates(List<Game> theGames)
-    {
-        SortedSet<Game> theSorted = new TreeSet<Game>(new Comparator<Game>()
-        {
-            @Override
-            public int compare(Game g1, Game g2)
-            {
-                return g1.getDateCalendar().compareTo(g2.getDateCalendar());
-            }
-        });
-        theSorted.addAll(theGames);
-        return theSorted.toArray(new Game[theSorted.size()]);
-    }
-
     /** Create a new dialog for date picker */
     @Override
     protected Dialog onCreateDialog(int id) {
-        switch (id)
-        {
+        switch (id) {
             case DATE_DIALOG_ID:
                 final Calendar today = new GregorianCalendar();
                 return new DatePickerDialog(this,
@@ -208,10 +188,9 @@ public class GamesPlayedActivity extends Activity {
     }
 
     /** Callback received when the user "picks" a date in the dialog */
-    private DatePickerDialog.OnDateSetListener pDateSetListener = new DatePickerDialog.OnDateSetListener()
-    {
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)
-        {
+    private DatePickerDialog.OnDateSetListener pDateSetListener = new DatePickerDialog.OnDateSetListener()  {
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth)   {
+
             Calendar chosenDate = new GregorianCalendar(year, monthOfYear, dayOfMonth);
             Calendar today = new GregorianCalendar();
 
@@ -224,16 +203,23 @@ public class GamesPlayedActivity extends Activity {
             else if(numDays < 0)
                 setTitle(numDays + " from now, " + getCalendarString(chosenDate));
 
-            final Game newGame = new Game(chosenDate, thePitcher);
+            final Game newGame = new Game(chosenDate, thePitcher, getCounter());
 
-            theGamesLayout.addView(getGameLL(newGame, theGames.length), 0);
+            theGames.add(0, newGame);
+            redrawGames();
             theGamesDB = new SQLiteGamesDatabase(theC);
             theGamesDB.addGame(newGame);
             theGamesDB.close();
-
-            updateActionBarTitle();
         }
     };
+
+    private void redrawGames() {
+        theGamesLayout.removeAllViews();
+
+        for(int i = 0; i < theGames.size(); i++)
+            theGamesLayout.addView(getGameLL(theGames.get(i), i));
+        updateActionBarTitle();
+    }
 
     private String getPitchesText(final int thePitches) {
         if(thePitches == 1)
@@ -241,14 +227,16 @@ public class GamesPlayedActivity extends Activity {
         return thePitches + " pitches";
     }
 
+    private void updateActionBarTitle() {
+        for(int i = 0; i < theGames.size(); i++) {
+            log(theGames.get(i).toString());
+        }
 
-    private void updateActionBarTitle()
-    {
         String theStr = "";
-        if(theGames.length == 1)
+        if(theGames.size() == 1)
             theStr = "1 Game";
         else
-            theStr = theGames.length + " Games";
+            theStr = theGames.size() + " Games";
 
         getActionBar().setTitle(theStr + " for " + thePitcher.getName());
     }
@@ -286,24 +274,17 @@ public class GamesPlayedActivity extends Activity {
     }
 
     /**Returns something like Thursday, July 10th, 2014 */
-    public static String getCalendarString(Calendar theCal)
-    {
+    public static String getCalendarString(Calendar theCal) {
         return days[theCal.get(Calendar.DAY_OF_WEEK)].substring(0, 3) +  ", " +
                 months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
                 ", " + theCal.get(Calendar.YEAR);
     }
 
     /** Using Calendar - THE CORRECT (& Faster) WAY**/
-    public static long daysBetween(final Calendar startDate, final Calendar endDate)
-    {
+    public static long daysBetween(final Calendar startDate, final Calendar endDate) {
         final long diff = startDate.getTimeInMillis() - endDate.getTimeInMillis();
         return diff / (24 * 60 * 60 * 1000);
     }
-
-    private static final String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday",
-            "Thursday", "Friday", "Saturday"};
-    private static final String[] months = {"January", "February", "March", "April", "May",
-            "June", "July", "August", "September", "October", "November", "December"};
 
     //Returns calender from theStr = "07/11/2014"
     private Calendar fromString(String theStr) {
@@ -321,14 +302,25 @@ public class GamesPlayedActivity extends Activity {
         return new GregorianCalendar(year, month, day);
     }
 
+    private void incrementCounter() {
+        final SharedPreferences settings = getSharedPreferences(prefName, 0);
+        final SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(ID_KEY, getCounter() + 1);
+        editor.commit();
+    }
+
+    private short getCounter() {
+        final SharedPreferences settings = getSharedPreferences(prefName, 0);
+        return (short) settings.getInt(ID_KEY, 0);
+    }
+
     //Returns 07/11/2014
     private String fromCalendar(Calendar theCal) {
         return theCal.get(Calendar.MONTH) + "/" + theCal.get(Calendar.DAY_OF_MONTH) + "/" +
                 theCal.get(Calendar.YEAR);
     }
 
-    private void log(String message)
-    {
+    private void log(String message)   {
         Log.e("com.ryan.pitchcounter", message);
     }
 }

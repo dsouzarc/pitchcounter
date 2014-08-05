@@ -3,6 +3,7 @@ package com.ryan.pitchcounter;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +23,8 @@ public class EditGamesActivity extends Activity {
     private SQLiteGamesDatabase theGamesDB;
     private final Context theC = this;
     private Pitcher thePitcher = null;
+    private static final String prefName = "com.ryan.pitchcounter";
+    private static final String ID_KEY = "ID";
 
     private final Stack<Boolean> isStrikeStack = new Stack<Boolean>();
     private TextView numPitches;
@@ -34,6 +37,7 @@ public class EditGamesActivity extends Activity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_games);
+        incrementCounter();
 
         final Game theG = getGame();
 
@@ -100,6 +104,18 @@ public class EditGamesActivity extends Activity {
         });
     }
 
+    private void incrementCounter() {
+        final SharedPreferences settings = getSharedPreferences(prefName, 0);
+        final SharedPreferences.Editor editor = settings.edit();
+        editor.putInt(ID_KEY, getCounter() + 1);
+        editor.commit();
+    }
+
+    private short getCounter() {
+        final SharedPreferences settings = getSharedPreferences(prefName, 0);
+        return (short) settings.getInt(ID_KEY, 0);
+    }
+
     private void updateData(final Game theG) {
         new UpdateDatabase().execute(theG);
         numPitches.setText(String.valueOf(theG.getTotalPitches()));
@@ -144,10 +160,11 @@ public class EditGamesActivity extends Activity {
         int pNum = theB.getInt("PitcherPitches");
         int nStrikes = theB.getInt("NumStrikes");
         int nBalls = theB.getInt("NumBalls");
+        short gameID = theB.getShort("GameID");
 
         Calendar theGameCal = fromString(gameD);
 
-        return new Game(theGameCal, new Pitcher(pName, pNum), nStrikes, nBalls);
+        return new Game(theGameCal, new Pitcher(pName, pNum), nStrikes, nBalls, gameID);
     }
 
 

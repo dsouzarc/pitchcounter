@@ -8,13 +8,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 public class SQLitePitcherDatabase extends SQLiteOpenHelper
 {
@@ -80,7 +77,7 @@ public class SQLitePitcherDatabase extends SQLiteOpenHelper
         List<String> theNames = new ArrayList<String>();
 
         SQLiteGamesDatabase theGDB = new SQLiteGamesDatabase(theC);
-        Game[] theG = removeDuplicates(theGDB.getAllGames());
+        Game[] theG = getArray(theGDB.getAllGames());
 
         // 1. build the query
         String query = "SELECT  * FROM " + TABLE_NAME;
@@ -179,18 +176,9 @@ public class SQLitePitcherDatabase extends SQLiteOpenHelper
         theDB.close();
     }
 
-    public Game[] removeDuplicates(List<Game> theGames)
+    public Game[] getArray(List<Game> theGames)
     {
-        SortedSet<Game> theSorted = new TreeSet<Game>(new Comparator<Game>()
-        {
-            @Override
-            public int compare(Game g1, Game g2)
-            {
-                return g1.getDateCalendar().compareTo(g2.getDateCalendar());
-            }
-        });
-        theSorted.addAll(theGames);
-        return theSorted.toArray(new Game[theSorted.size()]);
+        return theGames.toArray(new Game[theGames.size()]);
     }
 
 

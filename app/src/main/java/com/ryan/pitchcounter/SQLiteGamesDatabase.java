@@ -10,38 +10,35 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-public class SQLiteGamesDatabase extends SQLiteOpenHelper
-{
+public class SQLiteGamesDatabase extends SQLiteOpenHelper {
     // Database Version
     private static final int DATABASE_VERSION = 1;
     // Database Name
     private static final String DATABASE_NAME = "GamesDB";
     private static final String TABLE_NAME = "games";
     private static final String KEY_PITCHER_NAME = "PitcherName";
+    private static final String KEY_GAME_ID = "GameID";
     private static final String KEY_DATE = "GameDate";
     private static final String KEY_STRIKES = "Strikes";
     private static final String KEY_BALLS = "Balls";
 
     private final String KEY_ID = "id";
 
-    private final String[] COLUMNS = {KEY_ID, KEY_PITCHER_NAME, KEY_DATE, KEY_STRIKES, KEY_BALLS};
+    private final String[] COLUMNS = {KEY_ID, KEY_PITCHER_NAME, KEY_GAME_ID, KEY_DATE, KEY_STRIKES, KEY_BALLS};
 
-    public SQLiteGamesDatabase(Context context)
-    {
+    public SQLiteGamesDatabase(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
     @Override
-    public void onCreate(SQLiteDatabase db)
-    {
+    public void onCreate(SQLiteDatabase db) {
         // SQL statement to create book table
         String CREATE_PITCHER_TABLE = "CREATE TABLE " + TABLE_NAME + " ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_PITCHER_NAME + " TEXT, "+
+                KEY_GAME_ID + " SHORT, " +
                 KEY_DATE + " TEXT, " +
                 KEY_STRIKES + " SHORT, " +
                 KEY_BALLS + " SHORT )";
@@ -51,8 +48,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
     }
 
     @Override
-    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion)
-    {
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         // Drop older books table if existed
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
 
@@ -60,8 +56,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
         this.onCreate(db);
     }
     //Returns calender from theStr = "07/11/2014"
-    private Calendar fromString(String theStr)
-    {
+    private Calendar fromString(String theStr) {
         String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
         int month = Integer.parseInt(getMonth);
 
@@ -77,8 +72,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
     }
 
     //Returns 07/11/2014
-    private String fromCalendar(Calendar theCal)
-    {
+    private String fromCalendar(Calendar theCal) {
         return theCal.get(Calendar.MONTH) + "/" + theCal.get(Calendar.DAY_OF_MONTH) + "/" +
                 theCal.get(Calendar.YEAR);
     }
@@ -91,6 +85,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
         // 2. create ContentValues to add key "column"/value
         ContentValues values = new ContentValues();
         values.put(KEY_PITCHER_NAME, theGame.getPitcherName());
+        values.put(KEY_GAME_ID, theGame.getID());
         values.put(KEY_DATE, fromCalendar(theGame.getDateCalendar()));
         values.put(KEY_STRIKES, theGame.getNumStrike());
         values.put(KEY_BALLS, theGame.getNumBall());
@@ -104,7 +99,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
 
     public List<Game> getAllGames()
     {
-        Set<Game> theGames = new HashSet<Game>();
+        final List<Game> theGames = new ArrayList<Game>();
 
         // 1. build the query
         String query = "SELECT  * FROM " + TABLE_NAME;
@@ -120,16 +115,16 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
         {
             do
             {
-                //Date, pitcher name
-                theGames.add(new Game(fromString(cursor.getString(2)), cursor.getString(1),
-                        Short.parseShort(cursor.getString(3)), Short.parseShort(cursor.getString(4))));
+                theGames.add(new Game(new Pitcher(cursor.getString(1)), Short.parseShort(cursor.getString(2)),
+                        fromString(cursor.getString(3)), Integer.parseInt(cursor.getString(4)),
+                                Integer.parseInt(cursor.getString(5))));
             }
             while (cursor.moveToNext());
         }
 
         db.close();
 
-        return new ArrayList<Game>(theGames);
+        return theGames;
     }
 
     public void deleteGames(Pitcher thePitcher)
@@ -150,17 +145,15 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
     }
 
 
-    public void deleteGame(Game theGame)
-    {
+    public void deleteGame(Game theGame) {
         // 1. get reference to writable DB
         SQLiteDatabase db = this.getWritableDatabase();
 
         // 2. delete
-        try
-        {
+        try {
             db.delete(TABLE_NAME,
-                    KEY_PITCHER_NAME + " = ? AND " + KEY_DATE + " = ?",
-                    new String[] {theGame.getPitcherName(),fromCalendar(theGame.getDateCalendar())});
+                    KEY_PITCHER_NAME + " = ? AND " + KEY_GAME_ID + " = ?",
+                    new String[] {theGame.getPitcherName(), String.valueOf(theGame.getID())});
         } catch (Exception e) {}
 
         // 3. close
@@ -168,15 +161,13 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
     }
 
     //Delete everything
-    public void deleteAllGames()
-    {
+    public void deleteAllGames() {
         SQLiteDatabase theDB = this.getWritableDatabase();
         theDB.delete(TABLE_NAME, null, null);
         theDB.close();
     }
 
-    public List<Game> getGamesForPitcher(Pitcher thePitcher)
-    {
+    public List<Game> getGamesForPitcher(Pitcher thePitcher) {
         List<Game> theGames = new ArrayList<Game>(getAllGames());
         List<Game> actual = new ArrayList<Game>();
 
@@ -186,15 +177,14 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
         return actual;
     }
 
-    public void addGames(Game theGames[])
-    {
+    public void addGames(Game theGames[]) {
         SQLiteDatabase theDB = this.getWritableDatabase();
         theDB.beginTransaction();
 
-        for(Game theGame : theGames)
-        {
+        for(Game theGame : theGames) {
             ContentValues theVals = new ContentValues();
             theVals.put(KEY_PITCHER_NAME, theGame.getPitcherName());
+            theVals.put(KEY_GAME_ID, theGame.getID());
             theVals.put(KEY_DATE, fromCalendar(theGame.getDateCalendar()));
             theVals.put(KEY_STRIKES, theGame.getNumStrike());
             theVals.put(KEY_BALLS, theGame.getNumBall());
@@ -206,8 +196,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper
     }
 
 
-    public void log(final String message)
-    {
+    public void log(final String message) {
         Log.e("com.ryan.pitchcounter", message);
     }
 }
