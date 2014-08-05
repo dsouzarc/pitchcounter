@@ -12,8 +12,7 @@ public class Game {
     private Calendar theDate;
     private short ID;
 
-    public Game(Calendar date, Pitcher thePitcher, final short ID)
-    {
+    public Game(final Calendar date, final Pitcher thePitcher, final short ID) {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numBall = 0;
@@ -22,18 +21,8 @@ public class Game {
         this.ID = ID;
     }
 
-    public Game(Calendar date, String pitcherName, int numStrike, int numBall, final short ID)
-    {
-        this.theDate = date;
-        this.thePitcher = new Pitcher(pitcherName, numBall + numStrike);
-        this.numStrike = numStrike;
-        this.numBall = numBall;
-        this.date = calendarToDate(theDate);
-        this.ID = ID;
-    }
-
-    public Game(Calendar date, Pitcher thePitcher, int numStrike, int numBall, final short ID)
-    {
+    public Game(final Calendar date, final Pitcher thePitcher,
+                final int numStrike, final int numBall, final short ID) {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numStrike = numStrike;
@@ -42,7 +31,8 @@ public class Game {
         this.ID = ID;
     }
 
-    public Game(Pitcher thePitcher, short ID, Calendar date, int numStrike, int numBall) {
+    public Game(final Pitcher thePitcher, final short ID,
+                final Calendar date, final int numStrike, final int numBall) {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numStrike = numStrike;
@@ -65,8 +55,13 @@ public class Game {
                 ", " + theCal.get(Calendar.YEAR);
     }
 
-    public Calendar getDateCalendar() { return this.theDate; }
-    public String getPitcherName() { return this.thePitcher.getName(); }
+    public Calendar getDateCalendar() {
+        return this.theDate;
+    }
+
+    public String getPitcherName() {
+        return this.thePitcher.getName();
+    }
 
     public int getTotalPitches() {
         return this.numBall + this.numStrike;
@@ -125,13 +120,10 @@ public class Game {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return thePitcher.toString() + " ON: " + this.date + " #Str: " + this.numStrike + " #Ball: " +
             this.numBall;
     }
-
-
 
     @Override
     public boolean equals(Object otherGame) {
@@ -145,6 +137,4 @@ public class Game {
             "Thursday", "Friday", "Saturday"};
     private static final String[] months = {"January", "February", "March", "April", "May",
             "June", "July", "August", "September", "October", "November", "December"};
-
-
 }
