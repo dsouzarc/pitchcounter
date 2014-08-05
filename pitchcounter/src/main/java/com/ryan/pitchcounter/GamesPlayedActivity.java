@@ -235,6 +235,7 @@ public class GamesPlayedActivity extends Activity {
             theStr = "1 Game";
         else
             theStr = theGames.size() + " Games";
+
         getActionBar().setTitle(theStr + " for " + thePitcher.getName());
     }
 
