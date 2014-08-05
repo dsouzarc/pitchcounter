@@ -6,6 +6,12 @@ public class Pitcher {
     private String name;
     private int numPitches;
     private ArrayList<Game> games;
+    private double percentRatio;
+
+    public Pitcher(String name, double percentRatio) {
+        this.name = name;
+        this.percentRatio = percentRatio;
+    }
 
     public Pitcher(String name, int numPitches) {
         this.name = name;
@@ -28,6 +34,14 @@ public class Pitcher {
         for(int i = 0; i < games.size(); i++)
             total += games.get(i).getTotalPitches();
         return total;
+    }
+
+    public double getRatio() {
+        return this.percentRatio;
+    }
+
+    public void setRatio(final double theRatio) {
+        this.percentRatio = theRatio;
     }
 
     public void addPitch() {

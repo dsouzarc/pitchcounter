@@ -18,12 +18,15 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.text.DecimalFormat;
 import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class PitchersHomePage extends Activity {
+
+    private static final DecimalFormat theFormat = new DecimalFormat("0.000");
 
     private final Context theC = this;
 
@@ -39,7 +42,7 @@ public class PitchersHomePage extends Activity {
         thePitcherLayout = (LinearLayout) findViewById(R.id.pitchersLinearLayout);
 
         thePitcherDatabase = new SQLitePitcherDatabase(theC);
-        thePitchers = removeDuplicates(thePitcherDatabase.getAllPitchers(theC));
+        thePitchers = removeDuplicates(thePitcherDatabase.getAllPitchersStrike(theC));
         thePitcherDatabase.close();
 
         updateActionBar();
@@ -88,7 +91,7 @@ public class PitchersHomePage extends Activity {
             theView.setGravity(Gravity.LEFT);
         }
         else {
-            theView.setText("Pitches:" + thePitcher.getNumPitches());
+            theView.setText("Ratio: " + theFormat.format(thePitcher.getRatio()) + "%");
             theView.setGravity(Gravity.RIGHT);
         }
 
@@ -223,8 +226,7 @@ public class PitchersHomePage extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void log(String message)
-    {
+    private void log(String message) {
         Log.e("com.ryan.pitchcounter", message);
     }
 }

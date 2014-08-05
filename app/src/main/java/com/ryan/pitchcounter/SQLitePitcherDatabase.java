@@ -8,7 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -57,12 +56,54 @@ public class SQLitePitcherDatabase extends SQLiteOpenHelper
         db.close();
     }
 
-    public List<Pitcher> getAllPitchers(final Context theC) {
+    /** Returns list of pitches and overall strike percentage */
+    public List<Pitcher> getAllPitchersStrike(final Context theC) {
         final Set<Pitcher> thePitchers = new HashSet<Pitcher>();
         final List<String> theNames = new ArrayList<String>();
 
         final SQLiteGamesDatabase theGDB = new SQLiteGamesDatabase(theC);
         final Game[] theG = getArray(theGDB.getAllGames());
+        theGDB.close();
+
+        final String query = "SELECT  * FROM " + TABLE_NAME;
+
+        final SQLiteDatabase db = this.getWritableDatabase();
+        final Cursor cursor = db.rawQuery(query, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                theNames.add(cursor.getString(1));
+            } while (cursor.moveToNext());
+        }
+
+        final double[] numStrikes = new double[theNames.size()];
+        final double[] totalPitches = new double[theNames.size()];
+
+        for(int i = 0; i < theNames.size(); i++) {
+            for (int y = 0; y < theG.length; y++) {
+                if (theNames.get(i).equals(theG[y].getPitcherName())) {
+                    numStrikes[i] += theG[y].getNumStrike();
+                    totalPitches[i] += theG[y].getTotalPitches();
+                }
+            }
+        }
+
+        for(int i = 0; i < theNames.size(); i++)
+            thePitchers.add(new Pitcher(theNames.get(i), (100 * (numStrikes[i]/totalPitches[i]))));
+
+        db.close();
+        return new ArrayList<Pitcher>(thePitchers);
+    }
+
+    /** Returns list of Pitchers and total pitches */
+    public List<Pitcher> getAllPitchersTotal(final Context theC) {
+        final Set<Pitcher> thePitchers = new HashSet<Pitcher>();
+        final List<String> theNames = new ArrayList<String>();
+
+        final SQLiteGamesDatabase theGDB = new SQLiteGamesDatabase(theC);
+        final Game[] theG = getArray(theGDB.getAllGames());
+        theGDB.close();
+
         final String query = "SELECT  * FROM " + TABLE_NAME;
 
         final SQLiteDatabase db = this.getWritableDatabase();
@@ -94,8 +135,7 @@ public class SQLitePitcherDatabase extends SQLiteOpenHelper
     public void deletePitcher(final Pitcher thePitcher) {
         final SQLiteDatabase db = this.getWritableDatabase();
 
-        try
-        {
+        try {
             db.delete(TABLE_NAME,
                     KEY_PITCHER_NAME +" = ?",
                     new String[] {thePitcher.getName()});
