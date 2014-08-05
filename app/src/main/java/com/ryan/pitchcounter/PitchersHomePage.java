@@ -25,8 +25,9 @@ import java.util.TreeSet;
 
 public class PitchersHomePage extends Activity {
 
-    private LinearLayout thePitcherLayout;
     private final Context theC = this;
+
+    private LinearLayout thePitcherLayout;
     private Pitcher[] thePitchers;
     private SQLitePitcherDatabase thePitcherDatabase;
 
@@ -45,8 +46,7 @@ public class PitchersHomePage extends Activity {
         addPitchersToLL();
     }
 
-    private void updateActionBar()
-    {
+    private void updateActionBar() {
         if(thePitchers.length == 1)
             getActionBar().setTitle("1 Pitcher");
         else
@@ -70,8 +70,7 @@ public class PitchersHomePage extends Activity {
         return aLayout;
     }
 
-    private TextView getPitcherLL(final Pitcher thePitcher, final boolean showName, final int num)
-    {
+    private TextView getPitcherLL(final Pitcher thePitcher, final boolean showName, final int num) {
         if(thePitcher == null || thePitcher.getName() == null)
             return new TextView(theC);
 
@@ -97,8 +96,6 @@ public class PitchersHomePage extends Activity {
             theView.setTextColor(Color.parseColor("#ff33b5e5"));
         else
             theView.setTextColor(Color.BLACK);
-            //theView.setTextColor(Color.parseColor("#ff0099cc"));
-
 
         theView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,10 +120,8 @@ public class PitchersHomePage extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
                         Pitcher tempPitchers[] = new Pitcher[thePitchers.length-1];
                         int counter = 0;
-                        for(int i = 0; i < thePitchers.length; i++)
-                        {
-                            if(!thePitcher.getName().equals(thePitchers[i].getName()))
-                            {
+                        for(int i = 0; i < thePitchers.length; i++) {
+                            if(!thePitcher.getName().equals(thePitchers[i].getName())) {
                                 tempPitchers[counter] = thePitchers[i];
                                 counter++;
                             }
@@ -163,9 +158,8 @@ public class PitchersHomePage extends Activity {
     }
 
 
-    public Pitcher[] removeDuplicates(List<Pitcher> thePitchers)
-    {
-        SortedSet<Pitcher> theSorted = new TreeSet<Pitcher>(new Comparator<Pitcher>()
+    public Pitcher[] removeDuplicates(final List<Pitcher> thePitchers) {
+        final SortedSet<Pitcher> theSorted = new TreeSet<Pitcher>(new Comparator<Pitcher>()
         {
             @Override
             public int compare(Pitcher arg0, Pitcher arg1)
@@ -194,8 +188,7 @@ public class PitchersHomePage extends Activity {
             return true;
         }
 
-        else if(id == R.id.add_pitcher)
-        {
+        else if(id == R.id.add_pitcher) {
             final AlertDialog.Builder getPitcherName = new AlertDialog.Builder(theC);
             final EditText forPN = new EditText(theC);
 
