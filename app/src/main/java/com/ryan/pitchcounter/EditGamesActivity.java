@@ -20,13 +20,16 @@ import java.util.Stack;
 
 public class EditGamesActivity extends Activity {
 
-    private SQLiteGamesDatabase theGamesDB;
+    private final Stack<Boolean> isStrikeStack = new Stack<Boolean>();
     private final Context theC = this;
-    private Pitcher thePitcher = null;
+
     private static final String prefName = "com.ryan.pitchcounter";
     private static final String ID_KEY = "ID";
+    private static final DecimalFormat theFormat = new DecimalFormat("0.000");
 
-    private final Stack<Boolean> isStrikeStack = new Stack<Boolean>();
+    private SQLiteGamesDatabase theGamesDB;
+    private Pitcher thePitcher = null;
+
     private TextView numPitches;
     private TextView numStrikes;
     private TextView numBalls;
@@ -126,8 +129,7 @@ public class EditGamesActivity extends Activity {
 
     private class UpdateDatabase extends AsyncTask<Game, Void, Void> {
         @Override
-        public Void doInBackground(Game... theGames)
-        {
+        public Void doInBackground(final Game... theGames) {
             theGamesDB = new SQLiteGamesDatabase(theC);
             theGamesDB.deleteGame(theGames[0]);
             theGamesDB.addGame(theGames[0]);
@@ -138,80 +140,75 @@ public class EditGamesActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        Intent toGamesList = new Intent(this, GamesPlayedActivity.class);
+        final Intent toGamesList = new Intent(this, GamesPlayedActivity.class);
         toGamesList.putExtra("PitcherName", thePitcher.getName());
         toGamesList.putExtra("Pitches", thePitcher.getNumPitches());
         startActivity(toGamesList);
     }
 
-    private String getPercRatio(int strikes, int balls)
-    {
+    private String getPercRatio(final int strikes, final int balls) {
         if ((strikes + balls) == 0)
             return "0%";
-        double ratio = (((double)strikes) / ((double)strikes + (double)balls)) * 100;
-        return new DecimalFormat("0.000").format(ratio) + "%";
+        final double ratio = (((double)strikes) / ((double)strikes + (double)balls)) * 100;
+        return theFormat.format(ratio) + "%";
     }
 
-    private Game getGame()
-    {
-        Bundle theB = getIntent().getExtras();
-        String gameD = theB.getString("GameDate");
-        String pName = theB.getString("PitcherName");
-        int pNum = theB.getInt("PitcherPitches");
-        int nStrikes = theB.getInt("NumStrikes");
-        int nBalls = theB.getInt("NumBalls");
-        short gameID = theB.getShort("GameID");
+    private Game getGame() {
+        final Bundle theB = getIntent().getExtras();
 
-        Calendar theGameCal = fromString(gameD);
+        final String gameD = theB.getString("GameDate");
+        final String pName = theB.getString("PitcherName");
+        final int pNum = theB.getInt("PitcherPitches");
+        final int nStrikes = theB.getInt("NumStrikes");
+        final int nBalls = theB.getInt("NumBalls");
+        final short gameID = theB.getShort("GameID");
+
+        final Calendar theGameCal = fromString(gameD);
 
         return new Game(theGameCal, new Pitcher(pName, pNum), nStrikes, nBalls, gameID);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        getMenuInflater().inflate(R.menu.edit_games, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item)
-    {
-        int id = item.getItemId();
-        if (id == R.id.action_settings)
-        {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
     //Returns calender from theStr = "07/11/2014"
-    private Calendar fromString(String theStr)
-    {
-        String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
-        int month = Integer.parseInt(getMonth);
+    private Calendar fromString(String theStr) {
+
+        final String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
+        final int month = Integer.parseInt(getMonth);
 
         theStr = theStr.substring(theStr.indexOf("/") + 1);
 
-        String getDay = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
-        int day = Integer.parseInt(getDay);
+        final String getDay = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
+        final int day = Integer.parseInt(getDay);
 
-        String getYear = theStr.substring(theStr.indexOf("/")).replace("/", "");
-        int year = Integer.parseInt(getYear);
+        final String getYear = theStr.substring(theStr.indexOf("/")).replace("/", "");
+        final int year = Integer.parseInt(getYear);
 
         return new GregorianCalendar(year, month, day);
     }
 
     //Returns 07/11/2014
-    private String fromCalendar(Calendar theCal)
-    {
-        return theCal.get(Calendar.MONTH) + "/" + theCal.get(Calendar.DAY_OF_MONTH) + "/" +
+    private String fromCalendar(Calendar theCal) {
+        return theCal.get(Calendar.MONTH) + "/" +
+                theCal.get(Calendar.DAY_OF_MONTH) + "/" +
                 theCal.get(Calendar.YEAR);
     }
 
-    private void log(String message)
-    {
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.edit_games, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.action_settings) {
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void log(String message) {
         Log.e("com.ryan.pitchcounter", message);
     }
 }
