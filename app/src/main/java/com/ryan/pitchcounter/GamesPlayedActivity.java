@@ -20,6 +20,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.DatePicker;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import java.util.ArrayList;
 import android.widget.Toast;
 
 import java.util.Calendar;
@@ -28,20 +29,21 @@ import java.util.List;
 
 public class GamesPlayedActivity extends Activity {
 
-    private LinearLayout theGamesLayout;
     private final Context theC = this;
-    private List<Game> theGames;
-    private SQLiteGamesDatabase theGamesDB;
+    private List<Game> theGames = new ArrayList<Game>();
+
     private static final String prefName = "com.ryan.pitchcounter";
     private static final String ID_KEY = "ID";
-
-    private Pitcher thePitcher;
     private final int DATE_DIALOG_ID = 1001;
 
     private static final String[] days = {"Sunday", "Monday", "Tuesday", "Wednesday",
             "Thursday", "Friday", "Saturday"};
     private static final String[] months = {"January", "February", "March", "April", "May",
             "June", "July", "August", "September", "October", "November", "December"};
+
+    private LinearLayout theGamesLayout;
+    private SQLiteGamesDatabase theGamesDB;
+    private Pitcher thePitcher;
 
     //TODO: Add method that returns default TextView
 
@@ -52,10 +54,10 @@ public class GamesPlayedActivity extends Activity {
         incrementCounter();
 
         thePitcher = new Pitcher(getIntent().getExtras().getString("PitcherName"),
-                                 getIntent().getExtras().getInt("Pitches"));
+                getIntent().getExtras().getInt("Pitches"));
         
         theGamesDB = new SQLiteGamesDatabase(theC);
-        theGames = theGamesDB.getGamesForPitcher(thePitcher);
+        theGames.addAll(theGamesDB.getGamesForPitcher(thePitcher));
         theGamesDB.close();
         
         theGamesLayout = (LinearLayout) findViewById(R.id.gamesLinearLayout);
@@ -266,8 +268,7 @@ public class GamesPlayedActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void showToast(final String message)
-    {
+    private void showToast(final String message) {
         Toast theToast = Toast.makeText(theC, message, Toast.LENGTH_LONG);
         theToast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
         theToast.show();
@@ -288,16 +289,16 @@ public class GamesPlayedActivity extends Activity {
 
     //Returns calender from theStr = "07/11/2014"
     private Calendar fromString(String theStr) {
-        String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
-        int month = Integer.parseInt(getMonth);
+        final String getMonth = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
+        final int month = Integer.parseInt(getMonth);
 
         theStr = theStr.substring(theStr.indexOf("/") + 1);
 
-        String getDay = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
-        int day = Integer.parseInt(getDay);
+        final String getDay = theStr.substring(0, theStr.indexOf("/")).replace("/", "");
+        final int day = Integer.parseInt(getDay);
 
-        String getYear = theStr.substring(theStr.indexOf("/")).replace("/", "");
-        int year = Integer.parseInt(getYear);
+        final String getYear = theStr.substring(theStr.indexOf("/")).replace("/", "");
+        final int year = Integer.parseInt(getYear);
 
         return new GregorianCalendar(year, month, day);
     }
