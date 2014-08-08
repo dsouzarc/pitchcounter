@@ -9,6 +9,7 @@
         android:theme="@android:style/Theme.Holo.Light" >
         <activity
             android:name=".PitchersHomePage"
+            android:screenOrientation="portrait"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -17,12 +18,13 @@
         </activity>
         <activity
             android:name=".GamesPlayedActivity"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_games_played" >
         </activity>
         <activity
             android:name=".EditGamesActivity"
+            android:screenOrientation="portrait"
             android:label="@string/title_activity_edit_games" >
         </activity>
     </application>
-
 </manifest>
