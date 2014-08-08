@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -40,6 +41,8 @@ public class EditGamesActivity extends Activity {
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_games);
+        getActionBar().setIcon(
+                new ColorDrawable(getResources().getColor(android.R.color.transparent)));
         incrementCounter();
 
         final Game theG = getGame();
