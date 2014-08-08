@@ -211,9 +211,7 @@ public class PitchersHomePage extends Activity {
             getPitcherName.setOnDismissListener(new OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialog) {
-                    if (!isDuplicate[0]) {
-                        // you need this flag in order to close the dialog
-                        // when there is no issue
+                    if (isDuplicate[0]) {
                         dialog.dismiss();
                     }
                 }
