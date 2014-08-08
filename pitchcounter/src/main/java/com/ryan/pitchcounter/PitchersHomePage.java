@@ -8,7 +8,9 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.widget.Toast;
 import android.util.Log;
+import android.content.DialogInterface.OnDismissListener;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -97,7 +99,13 @@ public class PitchersHomePage extends Activity {
             theView.setGravity(Gravity.LEFT);
         }
         else {
-            theView.setText("Ratio: " + theFormat.format(thePitcher.getRatio()) + "%");
+            final String theRatio = theFormat.format(thePitcher.getRatio());
+            if(theRatio.contains("NaN")) {
+                theView.setText("Ratio: 0.00%");
+            }
+            else {
+                theView.setText("Ratio: " + theRatio + "%");
+            }
             theView.setGravity(Gravity.RIGHT);
         }
 
@@ -198,18 +206,40 @@ public class PitchersHomePage extends Activity {
             getPitcherName.setMessage("Enter Pitcher's Name");
             getPitcherName.setView(forPN);
 
+            final boolean[] isDuplicate = {false};
+
+            getPitcherName.setOnDismissListener(new OnDismissListener() {
+                @Override
+                public void onDismiss(DialogInterface dialog) {
+                    if (!isDuplicate[0]) {
+                        // you need this flag in order to close the dialog
+                        // when there is no issue
+                        dialog.dismiss();
+                    }
+                }
+            });
             getPitcherName.setPositiveButton("Add Pitcher", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     final Pitcher thePitcher = new Pitcher(forPN.getText().toString());
 
-                    thePitchers.add(0, thePitcher);
-                    addPitchersToLL();
-                    updateActionBar();
+                    for (int i = 0; i < thePitchers.size(); i++) {
+                        if (thePitcher.getName().equals(thePitchers.get(i).getName())) {
+                            isDuplicate[0] = true;
+                            getPitcherName.setMessage("Please choose a different name");
+                            makeToast("Please choose a different name");
+                        }
+                    }
 
-                    thePitcherDatabase = new SQLitePitcherDatabase(theC);
-                    thePitcherDatabase.addPitcher(thePitcher);
-                    thePitcherDatabase.close();
+                    if (!isDuplicate[0]) {
+                        thePitchers.add(0, thePitcher);
+                        addPitchersToLL();
+                        updateActionBar();
+
+                        thePitcherDatabase = new SQLitePitcherDatabase(theC);
+                        thePitcherDatabase.addPitcher(thePitcher);
+                        thePitcherDatabase.close();
+                    }
                 }
             });
 
@@ -225,6 +255,12 @@ public class PitchersHomePage extends Activity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void makeToast(final String message) {
+        Toast theT = Toast.makeText(getApplicationContext(), message, Toast.LENGTH_LONG);
+        theT.setGravity(Gravity.CENTER_HORIZONTAL| Gravity.TOP, 0, 100);
+        theT.show();
     }
 
     private void log(String message) {
