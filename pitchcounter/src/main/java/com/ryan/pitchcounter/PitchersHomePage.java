@@ -208,14 +208,6 @@ public class PitchersHomePage extends Activity {
 
             final boolean[] isDuplicate = {false};
 
-            getPitcherName.setOnDismissListener(new OnDismissListener() {
-                @Override
-                public void onDismiss(DialogInterface dialog) {
-                    if (isDuplicate[0]) {
-                        dialog.dismiss();
-                    }
-                }
-            });
             getPitcherName.setPositiveButton("Add Pitcher", new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {

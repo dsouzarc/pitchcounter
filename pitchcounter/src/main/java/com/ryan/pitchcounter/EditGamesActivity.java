@@ -47,8 +47,6 @@ public class EditGamesActivity extends Activity {
 
         final Game theG = getGame();
 
-        log("RECEIVED: " + theG.toString());
-
         thePitcher = getGame().getThePitcher();
 
         getActionBar().setTitle(theG.getPitcherName());
@@ -167,10 +165,6 @@ public class EditGamesActivity extends Activity {
         final int nStrikes = theB.getInt("NumStrikes");
         final int nBalls = theB.getInt("NumBalls");
         final long gameID = theB.getLong("GameID");
-
-        if(pNum != (nStrikes + nBalls)) {
-            log("DISCREP");
-        }
 
         final Calendar theGameCal = fromString(gameD);
         return new Game(theGameCal, new Pitcher(pName, pNum), nStrikes, nBalls, gameID);

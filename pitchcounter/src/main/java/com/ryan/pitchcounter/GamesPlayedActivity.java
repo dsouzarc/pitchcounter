@@ -86,8 +86,6 @@ public class GamesPlayedActivity extends Activity {
             toEditGame.putExtra("PitcherPitches", theGame.getThePitcher().getNumPitches());
             toEditGame.putExtra("NumStrikes", theGame.getNumStrike());
             toEditGame.putExtra("NumBalls", theGame.getNumBall());
-
-            log("STARTING: " + theGame.toString());
             startActivity(toEditGame);
         }
     }

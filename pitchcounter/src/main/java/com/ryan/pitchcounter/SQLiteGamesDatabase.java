@@ -111,13 +111,8 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper {
                 final int strikes = cursor.getInt(4);
                 final int balls = cursor.getInt(5);
 
-                final Game theGame = new Game(date, new Pitcher(pitcherName, (strikes + balls)),
-                        strikes, balls, gameID);
-
-                log(theGame.toString());
-
-                theGames.add(theGame);
-
+                theGames.add(new Game(date, new Pitcher(pitcherName, (strikes + balls)),
+                        strikes, balls, gameID));
             }
             while (cursor.moveToNext());
         }
