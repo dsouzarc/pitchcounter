@@ -39,7 +39,7 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper {
         final String CREATE_PITCHER_TABLE = "CREATE TABLE " + TABLE_NAME + " ( " +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 KEY_PITCHER_NAME + " TEXT, "+
-                KEY_GAME_ID + " SHORT, " +
+                KEY_GAME_ID + " LONG, " +
                 KEY_DATE + " TEXT, " +
                 KEY_STRIKES + " SHORT, " +
                 KEY_BALLS + " SHORT )";
@@ -101,9 +101,20 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper {
 
         if (cursor.moveToFirst()) {
             do {
-                theGames.add(new Game(new Pitcher(cursor.getString(1)), Short.parseShort(cursor.getString(2)),
-                        fromString(cursor.getString(3)), Integer.parseInt(cursor.getString(4)),
-                                Integer.parseInt(cursor.getString(5))));
+                //KEY_PITCHER_NAME, KEY_GAME_ID, KEY_DATE, KEY_STRIKES, KEY_BALLS};
+                final String pitcherName = cursor.getString(1);
+                final long gameID = Long.parseLong(cursor.getString(2));
+                final Calendar date = fromString(cursor.getString(3));
+                final int strikes = cursor.getInt(4);
+                final int balls = cursor.getInt(5);
+
+                final Game theGame = new Game(date, new Pitcher(pitcherName, (strikes + balls)),
+                        strikes, balls, gameID);
+
+                log(theGame.toString());
+
+                theGames.add(theGame);
+
             }
             while (cursor.moveToNext());
         }

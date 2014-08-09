@@ -10,9 +10,9 @@ public class Game {
     private Pitcher thePitcher;
     private int numStrike, numBall;
     private Calendar theDate;
-    private short ID;
+    private long ID;
 
-    public Game(final Calendar date, final Pitcher thePitcher, final short ID) {
+    public Game(final Calendar date, final Pitcher thePitcher, final long ID) {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numBall = 0;
@@ -21,8 +21,8 @@ public class Game {
         this.ID = ID;
     }
 
-    public Game(final Calendar date, final Pitcher thePitcher,
-                final int numStrike, final int numBall, final short ID) {
+    public Game(final Calendar date, final Pitcher thePitcher, final int numStrike,
+                final int numBall, final long ID) {
         this.theDate = date;
         this.thePitcher = thePitcher;
         this.numStrike = numStrike;
@@ -31,17 +31,7 @@ public class Game {
         this.ID = ID;
     }
 
-    public Game(final Pitcher thePitcher, final short ID,
-                final Calendar date, final int numStrike, final int numBall) {
-        this.theDate = date;
-        this.thePitcher = thePitcher;
-        this.numStrike = numStrike;
-        this.numBall = numBall;
-        this.date = calendarToDate(theDate);
-        this.ID = ID;
-    }
-
-    public short getID() {
+    public long getID() {
         return this.ID;
     }
 
@@ -122,13 +112,13 @@ public class Game {
     @Override
     public String toString() {
         return thePitcher.toString() + " ON: " + this.date + " #Str: " + this.numStrike + " #Ball: " +
-            this.numBall;
+            this.numBall + " ID: " + this.ID;
     }
 
     @Override
     public boolean equals(Object otherGame) {
         if(otherGame instanceof Game)
-            return this.getDate().equals(((Game) otherGame).getDate()) &&
+            return this.getDateCalendar().equals(((Game) otherGame).getDateCalendar()) &&
                     this.getThePitcher().equals((Game)otherGame);
         return false;
     }

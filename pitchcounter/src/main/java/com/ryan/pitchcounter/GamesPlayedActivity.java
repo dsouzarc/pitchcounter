@@ -86,6 +86,8 @@ public class GamesPlayedActivity extends Activity {
             toEditGame.putExtra("PitcherPitches", theGame.getThePitcher().getNumPitches());
             toEditGame.putExtra("NumStrikes", theGame.getNumStrike());
             toEditGame.putExtra("NumBalls", theGame.getNumBall());
+
+            log("STARTING: " + theGame.toString());
             startActivity(toEditGame);
         }
     }
@@ -207,7 +209,7 @@ public class GamesPlayedActivity extends Activity {
             else if(numDays < 0)
                 setTitle(numDays + " from now, " + getCalendarString(chosenDate));
 
-            final Game newGame = new Game(chosenDate, thePitcher, getCounter());
+            final Game newGame = new Game(chosenDate, thePitcher, String.valueOf(System.currentTimeMillis()).hashCode());
 
             theGames.add(0, newGame);
             redrawGames();
