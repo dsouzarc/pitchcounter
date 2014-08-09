@@ -275,10 +275,19 @@ public class GamesPlayedActivity extends Activity {
     }
 
     /**Returns something like Thursday, July 10th, 2014 */
-    public static String getCalendarString(Calendar theCal) {
-        return days[theCal.get(Calendar.DAY_OF_WEEK)].substring(0, 3) +  ", " +
-                months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
-                ", " + theCal.get(Calendar.YEAR);
+    public String getCalendarString(Calendar theCal) {
+        log("A: " + theCal.get(Calendar.DAY_OF_WEEK) + " B: " + theCal.get(Calendar.MONTH));
+
+        try {
+            return days[theCal.get(Calendar.DAY_OF_WEEK)].substring(0, 3) + ", " +
+                    months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
+                    ", " + theCal.get(Calendar.YEAR);
+        }
+        catch(Exception e) {
+            return days[theCal.get(Calendar.DAY_OF_WEEK)-1].substring(0, 3) + ", " +
+                    months[theCal.get(Calendar.MONTH)] + " " + theCal.get(Calendar.DAY_OF_MONTH) +
+                    ", " + theCal.get(Calendar.YEAR);
+        }
     }
 
     /** Using Calendar - THE CORRECT (& Faster) WAY**/

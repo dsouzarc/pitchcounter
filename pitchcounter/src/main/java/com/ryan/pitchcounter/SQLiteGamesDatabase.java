@@ -12,6 +12,9 @@ import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Collections;
+
+import java.util.Comparator;
 
 public class SQLiteGamesDatabase extends SQLiteOpenHelper {
 
@@ -171,7 +174,15 @@ public class SQLiteGamesDatabase extends SQLiteOpenHelper {
                 actual.add(theGame);
             }
         }
-        return new ArrayList<Game>(actual);
+        final List<Game> pitcherGames = new ArrayList<Game>(actual);
+        Collections.sort(pitcherGames, new Comparator<Game>() {
+            @Override
+            public int compare(Game lhs, Game rhs) {
+                return lhs.getDateCalendar().compareTo(rhs.getDateCalendar());
+            }
+        });
+
+        return pitcherGames;
     }
 
     public void addGames(final Game theGames[]) {
